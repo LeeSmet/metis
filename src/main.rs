@@ -1,4 +1,4 @@
-use vhost::vhost_user::message::VhostUserProtocolFeatures;
+use vhost::vhost_user::{message::VhostUserProtocolFeatures, Listener};
 use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock, VringState, VringT};
 use vm_memory::{GuestMemory, GuestMemoryAtomic, GuestMemoryMmap};
 use vmm_sys_util::epoll::EventSet;
@@ -10,7 +10,14 @@ type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
 fn main() {
     let mem = GuestMemoryAtomic::new(GuestMemoryMmap::new());
     let backend = Dummy;
-    let daemon = VhostUserDaemon::<_, VringRwLock>::new("metis".into(), backend, mem);
+    let mut daemon = VhostUserDaemon::<_, VringRwLock>::new("metis".into(), backend, mem)
+        .expect("can create vhost user daemon");
+    daemon
+        .start(Listener::new("./listener.sock", true).expect("can create vhost listener"))
+        .expect("can start listening on vhost socket");
+    daemon
+        .wait()
+        .expect("can wait until vhost daemon is finished");
 }
 
 #[derive(Debug, Clone)]
@@ -21,11 +28,13 @@ where
     V: VringT<GM<()>>,
 {
     fn num_queues(&self) -> usize {
-        todo!("num queues not yet implemented")
+        // TODO
+        1
     }
 
     fn max_queue_size(&self) -> usize {
-        todo!("max queue size not yet implemented")
+        // TODO
+        128
     }
 
     fn features(&self) -> u64 {
