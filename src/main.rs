@@ -1,5 +1,8 @@
 use vhost::vhost_user::{message::VhostUserProtocolFeatures, Listener};
 use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock, VringState, VringT};
+use virtio_bindings::{
+    virtio_blk::*, virtio_config::VIRTIO_F_VERSION_1, virtio_ring::VIRTIO_RING_F_EVENT_IDX,
+};
 use vm_memory::{GuestMemory, GuestMemoryAtomic, GuestMemoryMmap};
 use vmm_sys_util::epoll::EventSet;
 
@@ -38,7 +41,16 @@ where
     }
 
     fn features(&self) -> u64 {
-        todo!("features not yet implemented")
+        // TODO
+        1 << VIRTIO_BLK_F_SIZE_MAX // max segment size
+            | 1 << VIRTIO_BLK_F_SEG_MAX // max nr of segments
+            | 1 << VIRTIO_BLK_F_GEOMETRY // legacy geometry
+            | 1 << VIRTIO_BLK_F_BLK_SIZE // block size available
+            | 1 << VIRTIO_BLK_F_MQ // support more than one virtqueue
+            | 1 << VIRTIO_BLK_F_WRITE_ZEROES // WRITE_ZEROES supported
+            | 1 << VIRTIO_RING_F_EVENT_IDX // guest sets index for which it wants an interrupt
+            | 1 << VIRTIO_F_VERSION_1 // compatbile with V1 virtio
+            | 1 << VIRTIO_BLK_F_FLUSH // flush support -> legacy
     }
 
     fn protocol_features(&self) -> VhostUserProtocolFeatures {
