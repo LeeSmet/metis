@@ -46,6 +46,7 @@ where
             | 1 << VIRTIO_BLK_F_SEG_MAX // max nr of segments
             | 1 << VIRTIO_BLK_F_GEOMETRY // legacy geometry
             | 1 << VIRTIO_BLK_F_BLK_SIZE // block size available
+            | 1 << VIRTIO_BLK_F_CONFIG_WCE // enable writeback mode in config 
             | 1 << VIRTIO_BLK_F_MQ // support more than one virtqueue
             | 1 << VIRTIO_BLK_F_WRITE_ZEROES // WRITE_ZEROES supported
             | 1 << VIRTIO_RING_F_EVENT_IDX // guest sets index for which it wants an interrupt
