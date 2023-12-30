@@ -1,9 +1,9 @@
 use vhost::vhost_user::{message::VhostUserProtocolFeatures, Listener};
-use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock, VringState, VringT};
+use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock, VringT};
 use virtio_bindings::{
     virtio_blk::*, virtio_config::VIRTIO_F_VERSION_1, virtio_ring::VIRTIO_RING_F_EVENT_IDX,
 };
-use vm_memory::{GuestMemory, GuestMemoryAtomic, GuestMemoryMmap};
+use vm_memory::{bitmap::AtomicBitmap, GuestMemoryAtomic, GuestMemoryMmap};
 use vmm_sys_util::epoll::EventSet;
 
 /// An alias for `GuestMemoryAtomic<GuestMemoryMmap<B>>` to simplify code.
@@ -13,8 +13,8 @@ type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
 fn main() {
     let mem = GuestMemoryAtomic::new(GuestMemoryMmap::new());
     let backend = Dummy;
-    let mut daemon = VhostUserDaemon::<_, VringRwLock>::new("metis".into(), backend, mem)
-        .expect("can create vhost user daemon");
+    let mut daemon =
+        VhostUserDaemon::new("metis".into(), backend, mem).expect("can create vhost user daemon");
     daemon
         .start(Listener::new("./listener.sock", true).expect("can create vhost listener"))
         .expect("can start listening on vhost socket");
@@ -26,10 +26,10 @@ fn main() {
 #[derive(Debug, Clone)]
 pub struct Dummy;
 
-impl<V> VhostUserBackend<V> for Dummy
-where
-    V: VringT<GM<()>>,
-{
+impl VhostUserBackend for Dummy {
+    type Bitmap = AtomicBitmap;
+    type Vring = VringRwLock<GuestMemoryAtomic<GuestMemoryMmap<AtomicBitmap>>>;
+
     fn num_queues(&self) -> usize {
         // TODO
         1
@@ -62,17 +62,17 @@ where
         todo!("set event idx not yet implemented")
     }
 
-    fn update_memory(&self, mem: GM<()>) -> std::io::Result<()> {
-        todo!("update memory not yet implemented")
+    fn update_memory(&self, mem: GM<Self::Bitmap>) -> std::io::Result<()> {
+        todo!()
     }
 
     fn handle_event(
         &self,
         device_event: u16,
         evset: EventSet,
-        vrings: &[V],
+        vrings: &[Self::Vring],
         thread_id: usize,
-    ) -> std::io::Result<bool> {
-        todo!("handle event not yet implemented")
+    ) -> std::io::Result<()> {
+        todo!()
     }
 }

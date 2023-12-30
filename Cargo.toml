@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vhost = "0.7.0"
-vhost-user-backend = "0.9.0"
+vhost = "0.9.0"
+vhost-user-backend = "0.11.0"
 virtio-bindings = "0.2.0"
-vm-memory = "0.11.0"
+vm-memory = { version = "0.13.1", features = ["backend-bitmap"] }
 vmm-sys-util = "0.11.1"
