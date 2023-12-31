@@ -1,3 +1,5 @@
+use vm_memory::ByteValued;
+
 /// Config as defined in https://elixir.bootlin.com/linux/latest/source/include/uapi/linux/virtio_blk.h#L60
 #[derive(Debug, Clone, Copy, Default)]
 #[repr(C, packed)]
@@ -82,3 +84,12 @@ pub struct ZoneCharacteristic {
     model: u8,
     unused2: [u8; 3],
 }
+
+// SAFETY: Config only contains plain data types.
+unsafe impl ByteValued for Config {}
+
+// SAFETY: Geometry only contains plain data types.
+unsafe impl ByteValued for Geometry {}
+
+// SAFETY: ZoneCharacteristic only contains plain data types.
+unsafe impl ByteValued for ZoneCharacteristic {}

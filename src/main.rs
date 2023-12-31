@@ -1,9 +1,11 @@
+use config::Config;
+use log::info;
 use vhost::vhost_user::{message::VhostUserProtocolFeatures, Listener};
 use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock};
 use virtio_bindings::{
     virtio_blk::*, virtio_config::VIRTIO_F_VERSION_1, virtio_ring::VIRTIO_RING_F_EVENT_IDX,
 };
-use vm_memory::{bitmap::AtomicBitmap, GuestMemoryAtomic, GuestMemoryMmap};
+use vm_memory::{bitmap::AtomicBitmap, ByteValued, GuestMemoryAtomic, GuestMemoryMmap};
 use vmm_sys_util::epoll::EventSet;
 
 mod config;
@@ -14,7 +16,9 @@ type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
 
 fn main() {
     let mem = GuestMemoryAtomic::new(GuestMemoryMmap::new());
-    let backend = BlockBackend;
+    let backend = BlockBackend {
+        config: Default::default(),
+    };
     let mut daemon =
         VhostUserDaemon::new("metis".into(), backend, mem).expect("can create vhost user daemon");
     daemon
@@ -26,7 +30,9 @@ fn main() {
 }
 
 #[derive(Debug, Clone)]
-pub struct BlockBackend;
+pub struct BlockBackend {
+    config: Config,
+}
 
 impl VhostUserBackend for BlockBackend {
     type Bitmap = AtomicBitmap;
@@ -80,8 +86,9 @@ impl VhostUserBackend for BlockBackend {
 
     fn acked_features(&self, _features: u64) {}
 
-    fn get_config(&self, _offset: u32, _size: u32) -> Vec<u8> {
-        Vec::new()
+    fn get_config(&self, offset: u32, size: u32) -> Vec<u8> {
+        info!("Requesting virtio device config at offset {offset} with size {size}");
+        self.config.as_slice().to_vec()
     }
 
     fn set_config(&self, _offset: u32, _buf: &[u8]) -> std::io::Result<()> {
