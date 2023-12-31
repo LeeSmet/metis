@@ -76,7 +76,9 @@ impl VhostUserBackendMut for BlockBackend {
     }
 
     fn protocol_features(&self) -> VhostUserProtocolFeatures {
-        todo!("protocol features not yet impelmentend")
+        VhostUserProtocolFeatures::CONFIG
+            | VhostUserProtocolFeatures::MQ
+            | VhostUserProtocolFeatures::CONFIGURE_MEM_SLOTS
     }
 
     fn set_event_idx(&mut self, enabled: bool) {
