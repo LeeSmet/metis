@@ -39,8 +39,7 @@ impl VhostUserBackend for BlockBackend {
     type Vring = VringRwLock<GuestMemoryAtomic<GuestMemoryMmap<AtomicBitmap>>>;
 
     fn num_queues(&self) -> usize {
-        // TODO
-        1
+        self.config.num_queues as usize
     }
 
     fn max_queue_size(&self) -> usize {
