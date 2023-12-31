@@ -1,5 +1,5 @@
 use vhost::vhost_user::{message::VhostUserProtocolFeatures, Listener};
-use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock, VringT};
+use vhost_user_backend::{VhostUserBackend, VhostUserDaemon, VringRwLock};
 use virtio_bindings::{
     virtio_blk::*, virtio_config::VIRTIO_F_VERSION_1, virtio_ring::VIRTIO_RING_F_EVENT_IDX,
 };
@@ -12,7 +12,7 @@ type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
 
 fn main() {
     let mem = GuestMemoryAtomic::new(GuestMemoryMmap::new());
-    let backend = Dummy;
+    let backend = BlockBackend;
     let mut daemon =
         VhostUserDaemon::new("metis".into(), backend, mem).expect("can create vhost user daemon");
     daemon
@@ -24,9 +24,9 @@ fn main() {
 }
 
 #[derive(Debug, Clone)]
-pub struct Dummy;
+pub struct BlockBackend;
 
-impl VhostUserBackend for Dummy {
+impl VhostUserBackend for BlockBackend {
     type Bitmap = AtomicBitmap;
     type Vring = VringRwLock<GuestMemoryAtomic<GuestMemoryMmap<AtomicBitmap>>>;
 
@@ -74,5 +74,25 @@ impl VhostUserBackend for Dummy {
         thread_id: usize,
     ) -> std::io::Result<()> {
         todo!()
+    }
+
+    fn acked_features(&self, _features: u64) {}
+
+    fn get_config(&self, _offset: u32, _size: u32) -> Vec<u8> {
+        Vec::new()
+    }
+
+    fn set_config(&self, _offset: u32, _buf: &[u8]) -> std::io::Result<()> {
+        Ok(())
+    }
+
+    fn set_backend_req_fd(&self, _backend: vhost::vhost_user::Backend) {}
+
+    fn queues_per_thread(&self) -> Vec<u64> {
+        vec![0xffff_ffff]
+    }
+
+    fn exit_event(&self, _thread_index: usize) -> Option<vmm_sys_util::eventfd::EventFd> {
+        None
     }
 }
