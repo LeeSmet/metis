@@ -6,6 +6,8 @@ use virtio_bindings::{
 use vm_memory::{bitmap::AtomicBitmap, GuestMemoryAtomic, GuestMemoryMmap};
 use vmm_sys_util::epoll::EventSet;
 
+mod config;
+
 /// An alias for `GuestMemoryAtomic<GuestMemoryMmap<B>>` to simplify code.
 // TODO: fix (=export) in upstream (vhost-user-backend)
 type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
