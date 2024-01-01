@@ -14,6 +14,8 @@ use vm_memory::{bitmap::AtomicBitmap, ByteValued, GuestMemoryAtomic, GuestMemory
 use vmm_sys_util::epoll::EventSet;
 
 mod config;
+mod kernel;
+mod layout;
 
 /// An alias for `GuestMemoryAtomic<GuestMemoryMmap<B>>` to simplify code.
 // TODO: fix (=export) in upstream (vhost-user-backend)
